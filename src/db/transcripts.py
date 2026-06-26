@@ -31,13 +31,20 @@ def fetch_recent_meeting_transcripts(settings: Settings) -> list[MeetingTranscri
 
     t = schema.transcripts
     v = schema.videos
-    has_date_col = (
-        (t is not None and t.has("published_at", "uploaded_at", "created_at"))
-        or (v is not None and v.has("published_at"))
-    )
+    
+    # Determine if query has a date filter based on exact logic in build_transcript_query
+    has_date_filter = False
+    if v is None:
+        # No videos table: check transcripts for date columns
+        has_date_filter = t is not None and t.has("published_at", "uploaded_at", "created_at")
+    else:
+        # Videos table exists: check both tables
+        has_date_filter = (v.has("published_at") or (t is not None and t.has("published_at", "uploaded_at")))
+    
+    # Build params tuple based on whether date filter exists
     params = (
         (settings.lookback_days, settings.max_transcripts)
-        if has_date_col
+        if has_date_filter
         else (settings.max_transcripts,)
     )
 
@@ -84,3 +91,4 @@ def save_analysis_run(
             run_id = cur.fetchone()[0]
         conn.commit()
     return run_id
+
