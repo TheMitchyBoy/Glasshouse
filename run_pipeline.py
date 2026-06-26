@@ -78,7 +78,8 @@ def run(dry_run: bool | None = None) -> int:
 
     transcript_ids = [t.transcript_id for t in transcripts]
     run_id = save_analysis_run(settings, transcript_ids, analysis, telegram_sent)
-    print(f"Recorded analysis run #{run_id}.")
+    if run_id is not None:
+        print(f"Recorded analysis run #{run_id}.")
 
     return 0
 

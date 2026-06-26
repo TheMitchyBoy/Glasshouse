@@ -7,6 +7,7 @@ import psycopg2
 import psycopg2.extras
 
 from src.config import Settings
+from src.db.schema import build_transcript_query, load_schema
 
 
 @dataclass
@@ -25,25 +26,9 @@ def get_connection(settings: Settings):
 
 
 def fetch_recent_meeting_transcripts(settings: Settings) -> list[MeetingTranscript]:
-    query = """
-        SELECT
-            t.id AS transcript_id,
-            v.video_id,
-            v.title,
-            v.meeting_type,
-            v.published_at,
-            t.full_text,
-            COALESCE(t.word_count, LENGTH(t.full_text) / 5) AS word_count
-        FROM transcripts t
-        JOIN videos v ON v.id = t.video_id
-        WHERE v.is_meeting = TRUE
-          AND (
-              v.published_at IS NULL
-              OR v.published_at >= NOW() - (%s || ' days')::INTERVAL
-          )
-        ORDER BY v.published_at DESC NULLS LAST, t.fetched_at DESC
-        LIMIT %s
-    """
+    schema = load_schema(settings)
+    query = build_transcript_query(schema)
+
     with get_connection(settings) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(query, (settings.lookback_days, settings.max_transcripts))
@@ -52,10 +37,10 @@ def fetch_recent_meeting_transcripts(settings: Settings) -> list[MeetingTranscri
     return [
         MeetingTranscript(
             transcript_id=row["transcript_id"],
-            video_id=row["video_id"],
-            title=row["title"],
-            meeting_type=row["meeting_type"],
-            published_at=row["published_at"],
+            video_id=str(row["video_id"]),
+            title=row["title"] or str(row["video_id"]),
+            meeting_type=row.get("meeting_type"),
+            published_at=row.get("published_at"),
             full_text=row["full_text"],
             word_count=int(row["word_count"] or 0),
         )
@@ -68,7 +53,11 @@ def save_analysis_run(
     transcript_ids: list[int],
     ideas_json: dict,
     telegram_sent: bool,
-) -> int:
+) -> int | None:
+    schema = load_schema(settings)
+    if "analysis_runs" not in schema.tables:
+        return None
+
     query = """
         INSERT INTO analysis_runs (transcripts, ideas_json, telegram_sent)
         VALUES (%s, %s, %s)
