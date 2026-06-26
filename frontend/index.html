@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meeting Video Ideas Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Local News Pipeline</p>
+        <h1>Meeting Video Ideas</h1>
+        <p class="subtitle">Test Telegram, tune AI guidance, and preview generated topic ideas.</p>
+      </div>
+      <button id="refresh-status" class="button secondary">Refresh status</button>
+    </header>
+
+    <section class="status-grid" id="status-grid">
+      <article class="card status-card" id="status-database">
+        <h2>Database</h2>
+        <p class="status-value">Checking…</p>
+        <p class="status-meta"></p>
+      </article>
+      <article class="card status-card" id="status-llm">
+        <h2>Claude / LLM</h2>
+        <p class="status-value">Checking…</p>
+        <p class="status-meta"></p>
+      </article>
+      <article class="card status-card" id="status-telegram">
+        <h2>Telegram</h2>
+        <p class="status-value">Checking…</p>
+        <p class="status-meta"></p>
+      </article>
+    </section>
+
+    <main class="layout">
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Telegram connection</h2>
+            <p>Verify your bot token and chat ID by sending a test message.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="test-message">Optional custom test message</label>
+          <textarea id="test-message" rows="3" placeholder="Leave blank to send the default connection test message."></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="test-telegram" class="button primary">Send Telegram test</button>
+        </div>
+        <pre id="telegram-result" class="result-box hidden"></pre>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>AI guidance</h2>
+            <p>Suggestions are appended to the Claude system prompt to improve topic ideas.</p>
+          </div>
+          <button id="save-guidance" class="button primary">Save guidance</button>
+        </div>
+
+        <form id="guidance-form" class="guidance-form">
+          <div class="form-row">
+            <label for="tone">Tone</label>
+            <input id="tone" name="tone" type="text" placeholder="investigative but accessible">
+          </div>
+          <div class="form-row">
+            <label for="audience">Target audience</label>
+            <input id="audience" name="audience" type="text" placeholder="local residents…">
+          </div>
+          <div class="form-row">
+            <label for="topics_to_prioritize">Topics to prioritize</label>
+            <textarea id="topics_to_prioritize" name="topics_to_prioritize" rows="2" placeholder="housing, school budgets, police accountability"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="topics_to_avoid">Topics to avoid</label>
+            <textarea id="topics_to_avoid" name="topics_to_avoid" rows="2" placeholder="routine procedural items, ceremonial recognitions"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="ideas_per_meeting">Ideas per meeting</label>
+            <input id="ideas_per_meeting" name="ideas_per_meeting" type="number" min="1" max="10" value="4">
+          </div>
+          <div class="form-row">
+            <label for="custom_guidance">Additional guidance for the AI</label>
+            <textarea id="custom_guidance" name="custom_guidance" rows="5" placeholder="Use punchy titles, focus on controversies with clear winners/losers, suggest B-roll and interview targets…"></textarea>
+          </div>
+        </form>
+
+        <details class="prompt-preview">
+          <summary>Preview effective system prompt</summary>
+          <pre id="effective-prompt"></pre>
+        </details>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>Run analysis</h2>
+            <p>Generate new video ideas using the current guidance settings.</p>
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <label><input id="dry-run" type="checkbox" checked> Dry run (do not send Telegram)</label>
+          <label><input id="send-telegram" type="checkbox"> Send results to Telegram</label>
+        </div>
+
+        <div class="actions">
+          <button id="run-analysis" class="button primary">Run analysis</button>
+          <button id="load-latest" class="button secondary">Load latest results</button>
+        </div>
+        <p id="analysis-status" class="inline-status"></p>
+      </section>
+
+      <section class="card results-card">
+        <div class="card-header">
+          <div>
+            <h2>Generated ideas</h2>
+            <p id="results-summary">No results loaded yet.</p>
+          </div>
+        </div>
+        <div id="ideas-list" class="ideas-list"></div>
+        <details class="prompt-preview">
+          <summary>Telegram preview</summary>
+          <pre id="telegram-preview"></pre>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -59,6 +59,22 @@ Preview without sending Telegram:
 python run_pipeline.py --dry-run
 ```
 
+### 5. Web dashboard
+
+Start the dashboard to test Telegram, edit AI guidance, and preview generated ideas:
+
+```bash
+python run_dashboard.py
+```
+
+Open [http://localhost:8080](http://localhost:8080)
+
+Dashboard features:
+- Connection status for database, LLM, and Telegram
+- Send a Telegram test message
+- Save producer guidance that is injected into the Claude system prompt
+- Run analysis and preview ideas without leaving the browser
+
 ## Database schema
 
 Tables: `channels`, `videos`, `transcripts`, `analysis_runs`.
@@ -93,14 +109,21 @@ Run on a cron schedule after new meetings are transcribed:
 ## Project layout
 
 ```
+config/
+  ai_guidance.json    # Saved AI producer guidance
 db/
   schema.sql          # PostgreSQL schema
   seed.sql            # Sample meeting data
+frontend/
+  index.html          # Web dashboard UI
 src/
+  api/                # FastAPI routes
   config.py           # Environment settings
   db/transcripts.py   # Transcript queries
   llm/claude.py       # Claude analysis
+  services/           # Pipeline + prompt settings
   research/web_search.py
   notifications/telegram.py
-run_pipeline.py       # Main entry point
+run_pipeline.py       # CLI entry point
+run_dashboard.py      # Web dashboard server
 ```

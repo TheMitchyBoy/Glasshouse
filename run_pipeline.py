@@ -4,18 +4,9 @@
 from __future__ import annotations
 
 import argparse
-import json
-import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))
 
 from src.config import get_settings
-from src.db.transcripts import fetch_recent_meeting_transcripts, save_analysis_run
-from src.llm.claude import analyze_transcripts
-from src.notifications.telegram import format_ideas_message, send_telegram_message
-from src.research.web_search import enrich_ideas_with_research
+from src.services.pipeline import run_pipeline
 
 
 def run(dry_run: bool | None = None) -> int:
@@ -24,62 +15,33 @@ def run(dry_run: bool | None = None) -> int:
         settings.dry_run = dry_run
 
     print(f"Fetching meeting transcripts (last {settings.lookback_days} days)...")
-    transcripts = fetch_recent_meeting_transcripts(settings)
-
-    if not transcripts:
-        print("No meeting transcripts found. Populate the database or widen LOOKBACK_DAYS.")
+    try:
+        result = run_pipeline(settings, dry_run=settings.dry_run)
+    except ValueError as exc:
+        print(str(exc))
         return 0
 
-    print(f"Found {len(transcripts)} transcript(s).")
-    payload = [
-        {
-            "transcript_id": t.transcript_id,
-            "title": t.title,
-            "meeting_type": t.meeting_type,
-            "published_at": t.published_at.isoformat() if t.published_at else None,
-            "text": t.full_text,
-        }
-        for t in transcripts
-    ]
-
-    print(f"Analyzing with LLM ({', '.join(settings.llm_providers)})...")
-    analysis = analyze_transcripts(settings, payload)
-    ideas = analysis.get("ideas", [])
-    summary = analysis.get("summary", "Video topic ideas from recent meetings.")
-
-    print(f"Generated {len(ideas)} idea(s). Running background research...")
-    ideas = enrich_ideas_with_research(ideas, settings.max_research_queries)
-    analysis["ideas"] = ideas
-
-    output_path = ROOT / "output" / "latest_ideas.json"
-    output_path.parent.mkdir(exist_ok=True)
-    output_path.write_text(json.dumps(analysis, indent=2), encoding="utf-8")
-    print(f"Saved full analysis to {output_path}")
-
-    message = format_ideas_message(summary, ideas)
-    telegram_sent = False
+    print(f"Found {result.transcript_count} transcript(s).")
+    print(f"Generated {result.idea_count} idea(s).")
+    print(f"Saved full analysis to {result.output_path}")
 
     if settings.dry_run:
         print("\n--- DRY RUN: Telegram message preview ---\n")
-        print(message.replace("<b>", "**").replace("</b>", "**").replace("<i>", "_").replace("</i>", "_"))
-    elif settings.telegram_configured:
-        print("Sending Telegram notification...")
-        send_telegram_message(
-            settings.telegram_bot_token,
-            settings.telegram_chat_id,
-            message,
+        print(
+            result.telegram_preview.replace("<b>", "**")
+            .replace("</b>", "**")
+            .replace("<i>", "_")
+            .replace("</i>", "_")
         )
-        telegram_sent = True
+    elif result.telegram_sent:
         print("Telegram notification sent.")
     else:
         print("Telegram not configured (set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).")
         print("\n--- Message preview ---\n")
-        print(message)
+        print(result.telegram_preview)
 
-    transcript_ids = [t.transcript_id for t in transcripts]
-    run_id = save_analysis_run(settings, transcript_ids, analysis, telegram_sent)
-    if run_id is not None:
-        print(f"Recorded analysis run #{run_id}.")
+    if result.run_id is not None:
+        print(f"Recorded analysis run #{result.run_id}.")
 
     return 0
 
