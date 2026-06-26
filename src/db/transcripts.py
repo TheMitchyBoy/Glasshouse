@@ -29,9 +29,21 @@ def fetch_recent_meeting_transcripts(settings: Settings) -> list[MeetingTranscri
     schema = load_schema(settings)
     query = build_transcript_query(schema)
 
+    t = schema.transcripts
+    v = schema.videos
+    has_date_col = (
+        (t is not None and t.has("published_at", "uploaded_at", "created_at"))
+        or (v is not None and v.has("published_at"))
+    )
+    params = (
+        (settings.lookback_days, settings.max_transcripts)
+        if has_date_col
+        else (settings.max_transcripts,)
+    )
+
     with get_connection(settings) as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute(query, (settings.lookback_days, settings.max_transcripts))
+            cur.execute(query, params)
             rows = cur.fetchall()
 
     return [
