@@ -100,18 +100,39 @@ def get_status():
 @router.get("/guidance")
 def get_guidance():
     guidance = load_guidance()
+    db_row = None
+    try:
+        from src.db.guidance_store import load_guidance_from_db
+
+        db_row = load_guidance_from_db()
+    except Exception:
+        pass
     return {
         "guidance": guidance,
         "effective_prompt": get_system_prompt(guidance),
+        "saved_at": db_row.get("_saved_at") if db_row else None,
+        "storage": "database" if db_row else "file",
     }
 
 
 @router.put("/guidance")
 def update_guidance(payload: GuidanceUpdate):
-    saved = save_guidance(payload.model_dump())
+    try:
+        saved = save_guidance(payload.model_dump())
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to save guidance: {exc}") from exc
+    db_row = None
+    try:
+        from src.db.guidance_store import load_guidance_from_db
+
+        db_row = load_guidance_from_db()
+    except Exception:
+        pass
     return {
         "guidance": saved,
         "effective_prompt": get_system_prompt(saved),
+        "saved_at": db_row.get("_saved_at") if db_row else None,
+        "storage": "database" if db_row else "file",
     }
 
 
@@ -153,7 +174,10 @@ def telegram_test(payload: TelegramTestRequest | None = None):
 @router.post("/analyze")
 def analyze(payload: AnalyzeRequest):
     settings = get_settings()
-    guidance = payload.guidance.model_dump() if payload.guidance else load_guidance()
+    if payload.guidance:
+        guidance = save_guidance(payload.guidance.model_dump())
+    else:
+        guidance = load_guidance()
 
     try:
         result = run_pipeline(

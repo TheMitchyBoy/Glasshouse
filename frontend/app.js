@@ -11,7 +11,10 @@ const ideasList = document.getElementById("ideas-list");
 const resultsSummary = document.getElementById("results-summary");
 const telegramPreview = document.getElementById("telegram-preview");
 const analysisStatus = document.getElementById("analysis-status");
+const guidanceSaveStatus = document.getElementById("guidance-save-status");
 const toast = document.getElementById("toast");
+
+let saveGuidanceTimer = null;
 
 function showToast(message, type = "ok") {
   toast.textContent = message;
@@ -56,6 +59,42 @@ function getGuidanceFromForm() {
     custom_guidance: data.get("custom_guidance") || "",
     ideas_per_meeting: Number(data.get("ideas_per_meeting") || 4),
   };
+}
+
+function updateGuidanceSaveStatus(savedAt, storage) {
+  if (!guidanceSaveStatus) return;
+  if (savedAt) {
+    const when = new Date(savedAt).toLocaleString();
+    guidanceSaveStatus.textContent = `Saved to ${storage || "database"} at ${when}`;
+  } else {
+    guidanceSaveStatus.textContent = "Not saved yet";
+  }
+}
+
+async function saveGuidance(showNotice = true) {
+  const payload = await api("/api/guidance", {
+    method: "PUT",
+    body: JSON.stringify(getGuidanceFromForm()),
+  });
+  effectivePrompt.textContent = payload.effective_prompt;
+  updateGuidanceSaveStatus(payload.saved_at, payload.storage);
+  if (showNotice) {
+    showToast("AI guidance saved");
+  }
+  return payload;
+}
+
+function scheduleGuidanceSave() {
+  if (saveGuidanceTimer) {
+    clearTimeout(saveGuidanceTimer);
+  }
+  saveGuidanceTimer = setTimeout(() => {
+    saveGuidance(false).then(() => {
+      showToast("Guidance auto-saved");
+    }).catch((error) => {
+      showToast(error.message, "error");
+    });
+  }, 1500);
 }
 
 function fillGuidanceForm(guidance) {
@@ -145,7 +184,11 @@ async function loadGuidance() {
   const payload = await api("/api/guidance");
   fillGuidanceForm(payload.guidance);
   effectivePrompt.textContent = payload.effective_prompt;
+  updateGuidanceSaveStatus(payload.saved_at, payload.storage);
 }
+
+guidanceForm.addEventListener("input", scheduleGuidanceSave);
+guidanceForm.addEventListener("change", scheduleGuidanceSave);
 
 document.getElementById("refresh-status").addEventListener("click", async () => {
   try {
@@ -158,12 +201,7 @@ document.getElementById("refresh-status").addEventListener("click", async () => 
 
 document.getElementById("save-guidance").addEventListener("click", async () => {
   try {
-    const payload = await api("/api/guidance", {
-      method: "PUT",
-      body: JSON.stringify(getGuidanceFromForm()),
-    });
-    effectivePrompt.textContent = payload.effective_prompt;
-    showToast("AI guidance saved");
+    await saveGuidance(true);
   } catch (error) {
     showToast(error.message, "error");
   }
@@ -199,6 +237,7 @@ document.getElementById("run-analysis").addEventListener("click", async () => {
   analysisStatus.textContent = "Running analysis… this can take up to a minute.";
 
   try {
+    await saveGuidance(false);
     const payload = await api("/api/analyze", {
       method: "POST",
       body: JSON.stringify({

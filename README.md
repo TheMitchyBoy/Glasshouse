@@ -81,7 +81,7 @@ Dashboard features:
 
 - Connection status for database, LLM, and Telegram
 - Send a Telegram test message
-- Save producer guidance that is injected into the Claude system prompt
+- Save producer guidance that is injected into the Claude system prompt (persisted in PostgreSQL)
 - Run analysis and preview ideas without leaving the browser
 
 ## Database schema

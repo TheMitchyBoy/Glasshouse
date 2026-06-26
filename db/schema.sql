@@ -44,3 +44,9 @@ CREATE TABLE IF NOT EXISTS analysis_runs (
 CREATE INDEX IF NOT EXISTS idx_videos_published ON videos(published_at DESC);
 CREATE INDEX IF NOT EXISTS idx_videos_meeting ON videos(is_meeting) WHERE is_meeting = TRUE;
 CREATE INDEX IF NOT EXISTS idx_transcripts_video ON transcripts(video_id);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+    key        TEXT PRIMARY KEY,
+    value      JSONB NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
