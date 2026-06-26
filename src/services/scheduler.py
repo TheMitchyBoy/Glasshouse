@@ -1,5 +1,12 @@
+"""APScheduler cron job for daily new-meeting detection.
+
+Runs run_daily_scan() once per day at DAILY_SCAN_HOUR:DAILY_SCAN_MINUTE
+in DAILY_SCAN_TIMEZONE. Started automatically with the web dashboard.
+"""
+
 from __future__ import annotations
 
+import json
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler

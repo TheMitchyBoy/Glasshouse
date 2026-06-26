@@ -1,3 +1,13 @@
+"""Fetch meeting transcripts from PostgreSQL.
+
+Queries are built dynamically by schema.py to support different
+database layouts (with or without a videos table, text vs integer IDs).
+
+Key functions:
+  fetch_recent_meeting_transcripts  — all meetings in the lookback window
+  fetch_unprocessed_meeting_transcripts — only meetings not yet analyzed
+  fetch_latest_meeting_transcript   — single most recent meeting
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,5 +1,11 @@
-from __future__ import annotations
+"""FastAPI application entry point.
 
+On startup (lifespan):
+  - Starts the daily meeting scan scheduler
+  - Starts Telegram bot long-polling for commands and Q&A
+
+Serves the web dashboard at / and REST API at /api/*.
+"""
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -24,7 +30,7 @@ async def lifespan(_: FastAPI):
     stop_daily_scheduler()
 
 
-app = FastAPI(title="Meeting Video Ideas Dashboard", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Glasshouse", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -1,3 +1,9 @@
+"""REST API routes for the web dashboard and automation triggers.
+
+Endpoints let the dashboard check connections, save AI guidance,
+run analysis, test Telegram, and manually trigger the daily scan.
+"""
+
 from __future__ import annotations
 
 import httpx

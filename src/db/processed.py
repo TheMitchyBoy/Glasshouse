@@ -1,3 +1,9 @@
+"""Track which meeting transcripts have already been analyzed.
+
+The daily scan uses this to avoid re-analyzing old meetings and only
+notify you when genuinely new transcripts appear in the database.
+"""
+
 from __future__ import annotations
 
 import psycopg2.extras

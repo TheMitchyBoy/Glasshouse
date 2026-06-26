@@ -1,3 +1,10 @@
+"""Claude structured analysis: transcripts → JSON video ideas.
+
+Sends meeting transcripts to Claude with a JSON schema prompt and
+returns parsed ideas. Handles model name normalization, provider
+fallback, truncated responses, and JSON repair on parse failure.
+"""
+
 from __future__ import annotations
 
 import httpx

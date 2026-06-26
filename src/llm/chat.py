@@ -1,3 +1,9 @@
+"""Plain-text LLM chat completions for the Telegram agent.
+
+Unlike claude.py (which expects structured JSON), this module returns
+free-form text answers for conversational Q&A.
+"""
+
 from __future__ import annotations
 
 import httpx

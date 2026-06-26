@@ -1,3 +1,9 @@
+"""PostgreSQL connection helper.
+
+Single place for database connections so other modules avoid
+circular imports between transcripts, schema, and guidance_store.
+"""
+
 from __future__ import annotations
 
 import psycopg2

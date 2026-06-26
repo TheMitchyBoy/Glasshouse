@@ -1,3 +1,11 @@
+"""Telegram bot: long-polling for commands and conversational Q&A.
+
+Routes messages from TELEGRAM_CHAT_ID only (security).
+  /latest, /ideas  → full structured video-ideas pipeline
+  /reset           → clear agent conversation memory
+  anything else    → meeting_agent.answer_question()
+"""
+
 from __future__ import annotations
 
 import logging

@@ -1,3 +1,14 @@
+"""Main analysis pipeline: transcripts → Claude → research → Telegram.
+
+Orchestrates the full flow from fetching meeting transcripts through
+LLM analysis, web research enrichment, Telegram delivery, and recording
+the run in Postgres.
+
+Entry points:
+  run_pipeline()                  — analyze all recent meetings (CLI)
+  run_pipeline_for_new_meetings() — daily scan: unprocessed only
+  run_pipeline_for_latest_meeting() — Telegram /latest command
+"""
 from __future__ import annotations
 
 import json

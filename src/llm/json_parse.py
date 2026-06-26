@@ -1,3 +1,8 @@
+"""Parse and repair JSON returned by Claude.
+
+LLM responses are sometimes truncated or malformed. This module strips
+markdown fences, extracts the JSON object, and uses json-repair as fallback.
+"""
 from __future__ import annotations
 
 import json

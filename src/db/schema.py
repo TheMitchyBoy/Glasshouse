@@ -1,3 +1,10 @@
+"""Runtime Postgres schema detection and adaptive SQL generation.
+
+Different YouTube transcript databases use different column names and
+join patterns. This module inspects information_schema and builds the
+correct SELECT query so Glasshouse works without manual schema config.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -107,6 +114,7 @@ def _build_transcript_query_sql(schema: DatabaseSchema) -> str:
             meeting_filter = "t.meeting_type IS NOT NULL"
         elif t.has("title", "video_title"):
             title_name = t.pick("title", "video_title")
+# %% must be escaped as %%%% in ILIKE patterns when using psycopg2 parameterized queries
             meeting_filter = (
                 f"(t.{title_name} ILIKE '%%meeting%%' OR t.{title_name} ILIKE '%%council%%' "
                 f"OR t.{title_name} ILIKE '%%board%%' OR t.{title_name} ILIKE '%%commission%%')"

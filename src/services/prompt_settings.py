@@ -1,3 +1,9 @@
+"""Producer guidance: tone, audience, and topic preferences for the LLM.
+
+Guidance is appended to Claude's system prompt so every analysis reflects
+your editorial style. Saved to Postgres via guidance_store.py.
+"""
+
 from __future__ import annotations
 
 import json

@@ -1,3 +1,9 @@
+"""Map OpenRouter model slugs to Anthropic API model IDs.
+
+OpenRouter uses dots (claude-sonnet-4.5) while Anthropic uses hyphens
+(claude-sonnet-4-5). Also defines fallback model chains per provider.
+"""
+
 from __future__ import annotations
 
 ANTHROPIC_FALLBACK_MODELS = [

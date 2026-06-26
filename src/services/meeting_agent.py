@@ -1,3 +1,10 @@
+"""Conversational AI agent for Telegram Q&A about meetings.
+
+Builds context from the latest meeting transcript, recent meetings list,
+and saved video-ideas analysis. Maintains per-chat conversation history
+so follow-up questions work naturally.
+"""
+
 from __future__ import annotations
 
 import json

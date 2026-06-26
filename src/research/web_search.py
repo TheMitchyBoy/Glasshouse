@@ -1,3 +1,9 @@
+"""Background web research via DuckDuckGo.
+
+For each video idea, runs the LLM-suggested search queries and attaches
+top results as background_research on the idea object.
+"""
+
 from __future__ import annotations
 
 from ddgs import DDGS

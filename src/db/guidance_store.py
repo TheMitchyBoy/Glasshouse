@@ -1,3 +1,10 @@
+"""Persist producer AI guidance in PostgreSQL.
+
+Guidance (tone, audience, topic preferences) is stored in app_settings
+so it survives Railway redeploys. Falls back to config/ai_guidance.json
+locally if the database is unavailable.
+"""
+
 from __future__ import annotations
 
 import json

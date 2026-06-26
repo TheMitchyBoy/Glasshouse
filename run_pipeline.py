@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Analyze meeting transcripts and send video topic ideas via Telegram."""
+"""One-shot CLI: analyze recent meetings and send video ideas via Telegram.
+
+Analyzes all meetings in the LOOKBACK_DAYS window (not just new ones).
+For daily new-meeting detection, use run_daily_scan.py instead.
+
+Usage:
+    python run_pipeline.py            # analyze + send Telegram
+    python run_pipeline.py --dry-run  # preview without sending
+"""
 
 from __future__ import annotations
 

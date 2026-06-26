@@ -1,3 +1,9 @@
+"""Telegram message formatting and delivery.
+
+format_ideas_message() — converts analysis JSON to HTML for Telegram
+send_telegram_message() — sends a message, splitting if over 4000 chars
+"""
+
 from __future__ import annotations
 
 import httpx

@@ -1,3 +1,9 @@
+"""Daily scan: find new meeting transcripts and notify via Telegram.
+
+Called by the APScheduler cron job and by POST /api/scan/daily.
+Only processes transcripts not already in processed_transcripts.
+"""
+
 from __future__ import annotations
 
 import logging

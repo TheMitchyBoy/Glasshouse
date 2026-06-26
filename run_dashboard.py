@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Start the web dashboard."""
+"""Start the web dashboard, daily scheduler, and Telegram bot.
+
+This is the primary entry point for local dev and Railway deploy.
+Binds to the PORT environment variable (Railway sets this automatically).
+
+Usage:
+    python run_dashboard.py
+    open http://localhost:8080
+"""
 
 import os
 

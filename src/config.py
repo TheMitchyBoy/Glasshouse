@@ -1,3 +1,12 @@
+"""Application configuration loaded from environment variables.
+
+All settings are defined in Settings and read from .env locally or
+injected by Railway in production. See .env.example for the full list.
+
+Provider priority for LLM calls is determined by which API keys are set:
+Anthropic → OpenRouter → OpenAI.
+"""
+
 from __future__ import annotations
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
