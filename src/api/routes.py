@@ -15,6 +15,11 @@ from src.services.prompt_settings import load_guidance, save_guidance
 router = APIRouter()
 
 
+@router.get("/health")
+def health():
+    return {"ok": True}
+
+
 class GuidanceUpdate(BaseModel):
     tone: str = ""
     audience: str = ""

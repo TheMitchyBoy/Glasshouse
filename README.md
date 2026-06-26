@@ -69,7 +69,16 @@ python run_dashboard.py
 
 Open [http://localhost:8080](http://localhost:8080)
 
+On **Railway**, the app reads the `PORT` environment variable automatically. The start command is configured in `railway.toml`:
+
+```bash
+uvicorn src.api.app:app --host 0.0.0.0 --port $PORT
+```
+
+Make sure your Railway service **start command** runs the dashboard (not `run_pipeline.py`). Health check: `/api/health`.
+
 Dashboard features:
+
 - Connection status for database, LLM, and Telegram
 - Send a Telegram test message
 - Save producer guidance that is injected into the Claude system prompt
