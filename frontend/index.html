@@ -135,6 +135,18 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
+
+  <dialog id="api-key-dialog" class="api-key-dialog">
+    <form method="dialog" id="api-key-form">
+      <h2>API key required</h2>
+      <p>Enter the <code>API_SECRET_KEY</code> configured on the server to use this dashboard.</p>
+      <input id="api-key-input" type="password" placeholder="API secret key" autocomplete="off" required>
+      <div class="actions">
+        <button type="submit" class="button primary">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="/app.js"></script>
 </body>
 </html>

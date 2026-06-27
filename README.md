@@ -157,6 +157,18 @@ python run_pipeline.py --dry-run  # preview only, no Telegram
 | `TELEGRAM_POLLING_ENABLED` | `true` | Listen for Telegram messages |
 | `AGENT_MAX_HISTORY` | `8` | Conversation turns remembered by Telegram agent |
 
+### Security (production)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ENV` | `development` | Set to `production` on Railway |
+| `API_SECRET_KEY` | _(empty)_ | **Required in production.** Protects `/api/*` routes |
+| `CORS_ORIGINS` | _(empty)_ | Comma-separated allowed origins for cross-origin requests |
+| `RATE_LIMIT_ANALYZE_PER_MINUTE` | `5` | Max analysis requests per IP per minute |
+| `RATE_LIMIT_SCAN_PER_MINUTE` | `2` | Max daily-scan triggers per IP per minute |
+
+When `API_SECRET_KEY` is set, the dashboard prompts for the key once per browser session. API clients can send `X-API-Key` or `Authorization: Bearer <key>`.
+
 ---
 
 ## Telegram bot

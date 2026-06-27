@@ -13,8 +13,71 @@ const telegramPreview = document.getElementById("telegram-preview");
 const analysisStatus = document.getElementById("analysis-status");
 const guidanceSaveStatus = document.getElementById("guidance-save-status");
 const toast = document.getElementById("toast");
+const apiKeyDialog = document.getElementById("api-key-dialog");
+const apiKeyForm = document.getElementById("api-key-form");
+const apiKeyInput = document.getElementById("api-key-input");
+
+const API_KEY_STORAGE = "glasshouse_api_key";
 
 let saveGuidanceTimer = null;
+let apiKeyPromise = null;
+
+function getApiKey() {
+  return sessionStorage.getItem(API_KEY_STORAGE) || "";
+}
+
+function setApiKey(key) {
+  sessionStorage.setItem(API_KEY_STORAGE, key.trim());
+}
+
+function promptForApiKey() {
+  if (!apiKeyDialog) {
+    return Promise.reject(new Error("API key dialog is unavailable."));
+  }
+
+  if (!apiKeyPromise) {
+    apiKeyPromise = new Promise((resolve, reject) => {
+      apiKeyInput.value = getApiKey();
+      apiKeyForm.onsubmit = (event) => {
+        event.preventDefault();
+        const key = apiKeyInput.value.trim();
+        if (!key) {
+          reject(new Error("API key is required."));
+          return;
+        }
+        setApiKey(key);
+        apiKeyDialog.close();
+        apiKeyPromise = null;
+        resolve(key);
+      };
+      apiKeyDialog.addEventListener(
+        "close",
+        () => {
+          if (apiKeyPromise && !getApiKey()) {
+            apiKeyPromise = null;
+            reject(new Error("API key is required."));
+          }
+        },
+        { once: true },
+      );
+      apiKeyDialog.showModal();
+    });
+  }
+
+  return apiKeyPromise;
+}
+
+async function ensureApiKey() {
+  const response = await fetch("/api/auth/required");
+  const payload = await response.json();
+  if (!payload.required) {
+    return;
+  }
+  if (getApiKey()) {
+    return;
+  }
+  await promptForApiKey();
+}
 
 function showToast(message, type = "ok") {
   toast.textContent = message;
@@ -22,9 +85,20 @@ function showToast(message, type = "ok") {
   setTimeout(() => toast.classList.add("hidden"), 3200);
 }
 
-async function api(path, options = {}) {
+async function api(path, options = {}, allowAuthRetry = true) {
+  await ensureApiKey();
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+  const apiKey = getApiKey();
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+
   const response = await fetch(path, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers,
     ...options,
   });
 
@@ -33,6 +107,12 @@ async function api(path, options = {}) {
     payload = await response.json();
   } catch {
     payload = null;
+  }
+
+  if (response.status === 401 && allowAuthRetry) {
+    sessionStorage.removeItem(API_KEY_STORAGE);
+    await promptForApiKey();
+    return api(path, options, false);
   }
 
   if (!response.ok) {
@@ -76,7 +156,9 @@ async function saveGuidance(showNotice = true) {
     method: "PUT",
     body: JSON.stringify(getGuidanceFromForm()),
   });
-  effectivePrompt.textContent = payload.effective_prompt;
+  if (effectivePrompt && payload.effective_prompt) {
+    effectivePrompt.textContent = payload.effective_prompt;
+  }
   updateGuidanceSaveStatus(payload.saved_at, payload.storage);
   if (showNotice) {
     showToast("AI guidance saved");
@@ -166,12 +248,14 @@ async function loadStatus() {
     setStatusCard(statusCards.llm, "error", "Not configured", status.llm.error || "");
   }
 
-  if (status.telegram.configured && status.telegram.bot) {
+  if (status.telegram.configured && (status.telegram.bot || status.telegram.bot_username)) {
+    const username = status.telegram.bot?.username || status.telegram.bot_username || "bot";
+    const chatMeta = status.telegram.chat_id ? ` · chat ${status.telegram.chat_id}` : "";
     setStatusCard(
       statusCards.telegram,
       "ok",
       "Configured",
-      `@${status.telegram.bot.username || "bot"} · chat ${status.telegram.chat_id}`,
+      `@${username}${chatMeta}`,
     );
   } else if (status.telegram.configured) {
     setStatusCard(statusCards.telegram, "warn", "Needs attention", status.telegram.error || "Bot token invalid");
@@ -183,7 +267,9 @@ async function loadStatus() {
 async function loadGuidance() {
   const payload = await api("/api/guidance");
   fillGuidanceForm(payload.guidance);
-  effectivePrompt.textContent = payload.effective_prompt;
+  if (effectivePrompt && payload.effective_prompt) {
+    effectivePrompt.textContent = payload.effective_prompt;
+  }
   updateGuidanceSaveStatus(payload.saved_at, payload.storage);
 }
 

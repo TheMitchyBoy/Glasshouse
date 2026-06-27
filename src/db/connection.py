@@ -12,4 +12,8 @@ from src.config import Settings
 
 
 def get_connection(settings: Settings):
-    return psycopg2.connect(settings.database_url)
+    database_url = settings.database_url
+    if settings.is_production and "sslmode=" not in database_url:
+        separator = "&" if "?" in database_url else "?"
+        database_url = f"{database_url}{separator}sslmode=require"
+    return psycopg2.connect(database_url)

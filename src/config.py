@@ -9,6 +9,7 @@ Anthropic → OpenRouter → OpenAI.
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,6 +44,16 @@ class Settings(BaseSettings):
     agent_context_chars: int = 8000
     agent_analysis_chars: int = 4000
     agent_recent_meetings: int = 5
+
+    env: str = Field(default="development", validation_alias="ENV")
+    api_secret_key: str = ""
+    cors_origins: str = ""
+    rate_limit_analyze_per_minute: int = 5
+    rate_limit_scan_per_minute: int = 2
+
+    @property
+    def is_production(self) -> bool:
+        return self.env.lower() in ("production", "prod")
 
     @property
     def llm_providers(self) -> list[str]:

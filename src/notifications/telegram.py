@@ -117,9 +117,13 @@ def format_ideas_message(summary: str, ideas: list[dict]) -> str:
     return text
 
 
-def _escape(value: str) -> str:
+def escape_telegram_html(value: str) -> str:
     return (
         value.replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
     )
+
+
+def _escape(value: str) -> str:
+    return escape_telegram_html(value)

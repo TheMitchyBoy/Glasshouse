@@ -297,6 +297,30 @@ textarea {
 .toast.ok { border-color: rgba(62, 207, 142, 0.45); }
 .toast.error { border-color: rgba(255, 107, 107, 0.45); }
 
+.api-key-dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  padding: 24px;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+}
+
+.api-key-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.api-key-dialog input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
 @media (max-width: 900px) {
   .status-grid {
     grid-template-columns: 1fr;
